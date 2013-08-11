@@ -1,0 +1,27 @@
+{
+  "name": "io.pinf.couchdb",
+  "version": "0.1.0",
+  "pm": "sm",
+  "mappings": {
+    "couchdb-darwin": [
+      "archive",
+      "http://mirror.metrocast.net/apache/couchdb/binary/mac/1.3.1/Apache-CouchDB-1.3.1.zip",
+      {
+        "descriptor": {
+          "bin": {
+            "couchdb": "./Contents/Resources/couchdbx-core/bin/couchdb"
+          }
+        }
+      }
+    ],
+    "pinf-for-nodejs": "github.com/pinf/pinf-for-nodejs/~0.1.0"
+  },
+  "dependencies": {
+    "commander": "~2.0.0"
+  },
+  "scripts": {
+    "start": "node io start",
+    "stop": "node io stop",
+    "status": "node io status"
+  }  
+}
