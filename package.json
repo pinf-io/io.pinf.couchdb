@@ -1,4 +1,5 @@
 {
+  "uid": "github.com/pinf-io/io.pinf.couchdb",
   "name": "io.pinf.couchdb",
   "version": "0.1.0",
   "pm": "sm",
@@ -17,11 +18,17 @@
     "pinf-for-nodejs": "github.com/pinf/pinf-for-nodejs/~0.1.0"
   },
   "dependencies": {
-    "commander": "~2.0.0"
+    "commander": "~2.0.0",
+    "portfinder": "~0.2.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.9.0"
   },
   "scripts": {
     "start": "node io start",
     "stop": "node io stop",
-    "status": "node io status"
-  }  
+    "status": "node io status",
+    "config": "node io config",
+    "test": "node_modules/.bin/mocha --reporter list test/*.js"
+  }
 }
