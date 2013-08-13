@@ -1,0 +1,11 @@
+{
+    "config": {
+        "github.com/pinf-io/io.pinf.couchdb": {
+            "couchdb": {
+                "httpd": {
+                    "port": null
+                }
+            }
+        }
+    }
+}

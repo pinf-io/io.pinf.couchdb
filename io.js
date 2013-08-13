@@ -15,52 +15,47 @@ PINF.main(function(context, callback) {
     var stderrPath = context.makePath("log", "couchdb.stderr.log");
     var configPath = context.makePath("tmp", "couchdb.ini");
 
-    function getConfig(readOnly, callback) {
-        if (typeof readOnly === "function" && typeof callback === "undefined") {
-            callback = readOnly;
-            readOnly = false;
+
+    var config = null;
+    context.on("config.changed", function() {
+        config = {};
+        for (var name in context.config) {
+            config[name] = context.config[name];
         }
-        function format(err, config) {
-            if (err) return callback(err);
-            if (!config) return callback(null, {});
-            // Derive pinf format from couchdb format.
-            return callback(null, {
-                "io": {
-                    "port": config.httpd.port
-                }
-            }, config);
+        // Derive pinf io standard config from couchdb config.
+        config.pinf = {
+            "io": {
+                "port": (config.couchdb && config.couchdb.httpd.port) || null
+            }
+        };
+    });
+    // Declare all config options and defaults.
+    context.ensureDefaultConfig("couchdb", {
+        "httpd": {
+            "port": null
         }
-        return PORTFINDER.getPort(function (err, port) {
-            if (err) return callback(err);
-            // Keep original config in couchdb format.
-            // @see http://docs.couchdb.org/en/latest/configuring.html
-            var defaultConfig = {};
-            var overrideConfig = {
-                "httpd": {
-                    "port": port
-                }
-            };
-            return context.ensureRuntimeConfig("couchdb", defaultConfig, overrideConfig, {
-                write: !readOnly
-            }, format);
-        });
-    }
+    });
+
 
     function resetConfig(callback) {
-        return context.ensureRuntimeConfig("couchdb", {}, {
-            "httpd": {
-                "port": null
-            }
-        }, callback);
+        return context.clearRuntimeConfig("couchdb", callback);
     }
 
     function ensureConfigFile(callback) {
-        return getConfig(function (err, pinfConfig, couchdbConfig) {
+        return PORTFINDER.getPort(function (err, port) {
             if (err) return callback(err);
-            return FS.writeFile(configPath, [
-                "[httpd]",
-                "port = " + couchdbConfig.httpd.port
-            ].join("\n"), callback);
+            return context.updateRuntimeConfig("couchdb", {
+                "httpd": {
+                    "port": port
+                }
+            }, function(err) {
+                if (err) return callback(err);
+                // @see http://docs.couchdb.org/en/latest/configuring.html
+                return FS.writeFile(configPath, [
+                    "[httpd]",
+                    "port = " + config.couchdb.httpd.port
+                ].join("\n"), callback);
+            });
         });
     }
 
@@ -105,12 +100,9 @@ PINF.main(function(context, callback) {
     }
 
     exports.config = function(callback) {
-        return getConfig(true, function(err, pinfConfig, couchdbConfig) {
+        return context.reloadConfig(function(err) {
             if (err) return callback(err);
-            return callback(null, {
-                pinf: pinfConfig,
-                couchdb: couchdbConfig
-            });
+            return callback(null, config);
         });
     }
 
